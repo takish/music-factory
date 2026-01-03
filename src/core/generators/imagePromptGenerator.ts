@@ -112,7 +112,11 @@ function visualizeTheme(themes: string[]): string | null {
 			visuals.push("warm colors", "soft bokeh");
 		}
 		// Additional theme mappings
-		if (themeLower.includes("愛されるため") || themeLower.includes("演技") || themeLower.includes("虚構")) {
+		if (
+			themeLower.includes("愛されるため") ||
+			themeLower.includes("演技") ||
+			themeLower.includes("虚構")
+		) {
 			visuals.push("dramatic lighting", "mirror reflection", "stage spotlight");
 		}
 		if (themeLower.includes("本音") || themeLower.includes("ズレ")) {

@@ -221,9 +221,10 @@ function generateArrangementSection(analysis: Analysis): string {
 	if (arr.rhythm) {
 		const rhythmEn = translateToEnglish(arr.rhythm);
 		// Avoid duplication like "programmed drums rhythm"
-		const rhythmLine = rhythmEn.toLowerCase().includes("drum") || rhythmEn.toLowerCase().includes("rhythm")
-			? `${capitalize(rhythmEn)}.`
-			: `${capitalize(rhythmEn)} rhythm.`;
+		const rhythmLine =
+			rhythmEn.toLowerCase().includes("drum") || rhythmEn.toLowerCase().includes("rhythm")
+				? `${capitalize(rhythmEn)}.`
+				: `${capitalize(rhythmEn)} rhythm.`;
 		lines.push(rhythmLine);
 	}
 

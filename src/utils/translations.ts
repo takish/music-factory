@@ -121,11 +121,11 @@ const MUSIC_TERMS: Record<string, string> = {
 	リピート: "repeat",
 
 	// Common phrases
-	"軽快なのに切迫感がある": "lively yet urgent",
+	軽快なのに切迫感がある: "lively yet urgent",
 	一瞬の: "momentary ",
-	"ポップだが少しメランコリックなマイナー感": "pop with a melancholic minor feel",
-	"命の瀬戸際にいる人への呼びかけ": "calling out to someone on the edge",
-	"追いかける焦燥": "desperate chase",
+	ポップだが少しメランコリックなマイナー感: "pop with a melancholic minor feel",
+	命の瀬戸際にいる人への呼びかけ: "calling out to someone on the edge",
+	追いかける焦燥: "desperate chase",
 	"焦燥、切なさ、届かない苦しさ": "anxiety, longing, unreachable anguish",
 	"焦燥, 切なさ, 届かない苦しさ": "anxiety, longing, unreachable anguish",
 };
@@ -149,9 +149,7 @@ export function translateToEnglish(text: string): string {
 	let result = text;
 
 	// Sort by length (longest first) to handle compound terms correctly
-	const sortedTerms = Object.entries(MUSIC_TERMS).sort(
-		(a, b) => b[0].length - a[0].length,
-	);
+	const sortedTerms = Object.entries(MUSIC_TERMS).sort((a, b) => b[0].length - a[0].length);
 
 	for (const [ja, en] of sortedTerms) {
 		result = result.replaceAll(ja, en);
@@ -197,8 +195,8 @@ export function translateChordFeel(feel: string): string {
 		解決しない: "Without resolution",
 		ダーク: "Dark",
 		明るい: "Bright",
-		"ポップだが少しメランコリックなマイナー感": "Pop with a melancholic minor feel",
-		"上昇する期待感と焦燥": "Rising anticipation and anxiety",
+		ポップだが少しメランコリックなマイナー感: "Pop with a melancholic minor feel",
+		上昇する期待感と焦燥: "Rising anticipation and anxiety",
 		"一瞬の静寂、覚悟": "Momentary silence, determination",
 	};
 
@@ -216,10 +214,9 @@ export function translateChordFeel(feel: string): string {
  */
 export function translateDynamics(dynamics: string): string {
 	const dynamicsMappings: Record<string, string> = {
-		"サビで爆発させるが、解決はしない":
-			"Explosive choruses without resolution",
+		"サビで爆発させるが、解決はしない": "Explosive choruses without resolution",
 		"語るが、救わない": "Narrating without salvation",
-		"軽快なのに切迫感がある": "Lively yet urgent",
+		軽快なのに切迫感がある: "Lively yet urgent",
 		激しい: "Intense",
 		穏やか: "Calm",
 		ドラマチック: "Dramatic",

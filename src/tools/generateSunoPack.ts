@@ -203,22 +203,22 @@ function generateTitle(analysis: Analysis): string {
 	const originalTitle = analysis.source_song.title.toLowerCase();
 
 	// Filter out keywords that are part of the original title
-	const safeKeywords = keywords.filter(k =>
-		k && !originalTitle.includes(k.toLowerCase()) && k.length >= 2
+	const safeKeywords = keywords.filter(
+		(k) => k && !originalTitle.includes(k.toLowerCase()) && k.length >= 2,
 	);
 
 	// Poetic transformations for common concepts
 	const poeticMappings: Record<string, string[]> = {
-		"夜": ["月影", "星屑", "暁前"],
-		"光": ["煌めき", "残光", "曙光"],
-		"駆ける": ["疾走", "彼方へ"],
-		"追いかける": ["追想", "残像"],
-		"届かない": ["遥か", "彼方"],
-		"希望": ["明日へ", "光芒"],
-		"絶望": ["深淵", "虚空"],
-		"愛": ["想い", "絆"],
-		"嘘": ["仮面", "虚像"],
-		"完璧": ["理想", "幻影"],
+		夜: ["月影", "星屑", "暁前"],
+		光: ["煌めき", "残光", "曙光"],
+		駆ける: ["疾走", "彼方へ"],
+		追いかける: ["追想", "残像"],
+		届かない: ["遥か", "彼方"],
+		希望: ["明日へ", "光芒"],
+		絶望: ["深淵", "虚空"],
+		愛: ["想い", "絆"],
+		嘘: ["仮面", "虚像"],
+		完璧: ["理想", "幻影"],
 	};
 
 	// Try to find a poetic alternative
@@ -260,8 +260,8 @@ async function loadAnalysis(analysisPath: string): Promise<Analysis> {
 	const content = await readText(analysisPath);
 
 	// Check for markdown by looking at extension or content
-	const isMarkdown = analysisPath.toLowerCase().endsWith(".md") ||
-		content.trimStart().startsWith("---");
+	const isMarkdown =
+		analysisPath.toLowerCase().endsWith(".md") || content.trimStart().startsWith("---");
 
 	if (isMarkdown) {
 		const parsed = parseAnalysisMarkdown(content);
