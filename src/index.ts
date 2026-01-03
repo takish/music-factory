@@ -23,9 +23,7 @@ server.tool(
 	"generate_suno_pack",
 	"Generate Suno-compatible output files from a song analysis YAML",
 	{
-		analysis_path: z
-			.string()
-			.describe("Path to analysis YAML file (e.g., analysis/sample.yaml)"),
+		analysis_path: z.string().describe("Path to analysis YAML file (e.g., analysis/sample.yaml)"),
 		target_length: z
 			.enum(["3min", "4min", "5min"])
 			.optional()
@@ -68,9 +66,7 @@ server.tool(
 	"validate_suno_pack",
 	"Validate a generated Suno pack (style length, lyrics sections, structure)",
 	{
-		output_dir: z
-			.string()
-			.describe("Path to output directory (e.g., outputs/sample)"),
+		output_dir: z.string().describe("Path to output directory (e.g., outputs/sample)"),
 	},
 	async (args) => {
 		try {
@@ -159,9 +155,7 @@ server.tool(
 	"generate_note_from_analysis",
 	"Generate note.com article draft from analysis.yaml",
 	{
-		analysis_path: z
-			.string()
-			.describe("Path to analysis YAML file (e.g., analysis/sample.yaml)"),
+		analysis_path: z.string().describe("Path to analysis YAML file (e.g., analysis/sample.yaml)"),
 	},
 	async (args) => {
 		try {

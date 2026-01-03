@@ -53,7 +53,9 @@ export function generateStyle(analysis: Analysis): string {
 
 	// Length / Structure section
 	const structureLines: string[] = [];
-	structureLines.push(`Aim for about ${analysis.music_structure.target_length.replace("min", " minutes")}.`);
+	structureLines.push(
+		`Aim for about ${analysis.music_structure.target_length.replace("min", " minutes")}.`,
+	);
 	structureLines.push(formatSections(analysis.music_structure.sections));
 	sections.push(`Length / Structure:\n${structureLines.join("\n")}`);
 

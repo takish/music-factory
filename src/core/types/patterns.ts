@@ -57,6 +57,56 @@ export interface CoreTypePattern {
  * Pattern dictionary by core_type
  */
 export const CORE_TYPE_PATTERNS: Record<string, CoreTypePattern> = {
+	ado: {
+		name: "ado",
+		description: "反逆、パワフルボーカル、グロウル/ファルセット、ボカロ由来",
+		defaultSections: [
+			"Intro",
+			"Verse1",
+			"Verse2",
+			"PreChorus",
+			"Chorus",
+			"Verse1",
+			"Verse2",
+			"PreChorus",
+			"Chorus",
+			"Instrumental",
+			"Bridge",
+			"FinalChorus",
+			"Outro",
+		],
+		tempoRange: { min: 140, max: 180, typical: 170 },
+		keyMode: "minor",
+		energyCurve: "wave",
+		chordPatterns: {
+			verse: { feel: "tense, driving", pattern: "i - VII - VI - V" },
+			prechorus: { feel: "building tension", pattern: "iv - v - VI - VII" },
+			chorus: { feel: "explosive, rebellious", pattern: "i - VI - III - VII" },
+			bridge: { feel: "dramatic pause", pattern: "iv - i - V - i" },
+		},
+		arrangement: {
+			center: "distorted electric guitar",
+			rhythm: "aggressive driving drums, punchy kick",
+			bass: "synth bass, thick and groovy",
+			density: { verse: "medium", chorus: "high", final: "very high" },
+			dynamics: "dramatic contrasts, sudden drops to explosive builds",
+			earCandy: "synth stabs, vocal ad-libs, distortion effects",
+		},
+		lyricsDesign: {
+			perspective: "first_person_assertive",
+			scenery: "minimal, urban/modern",
+			emotionExpression: "direct, confrontational",
+			wordDensity: "high",
+			chorusHookRule: [
+				"memorable_catchy_phrase",
+				"onomatopoeia_interjections",
+				"direct_emotion_ok",
+			],
+		},
+		typicalThemes: ["rebellion", "social frustration", "self-assertion", "generational conflict"],
+		typicalKeywords: ["うるさい", "黙れ", "私", "叫ぶ", "反逆", "怒り"],
+	},
+
 	yorushika: {
 		name: "yorushika",
 		description: "情景優先、抑制、余韻、ギター中心",
