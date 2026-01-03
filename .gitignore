@@ -1,10 +1,6 @@
 # Dependencies
 node_modules/
 
-# Build outputs
-dist/
-*.tsbuildinfo
-
 # Bun
 bun.lockb
 
@@ -24,15 +20,5 @@ bun.lockb
 *.log
 logs/
 
-# Test coverage
-coverage/
-
 # Claude Code
 .claude/
-.mcp.json
-
-# Data directory - keep structure, track analysis files
-!data/
-!data/**/.gitkeep
-!data/analysis/
-!data/notes/

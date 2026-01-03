@@ -1,27 +1,17 @@
 {
   "name": "music-factory",
   "version": "0.1.0",
-  "type": "module",
+  "private": true,
   "scripts": {
-    "start": "bun run src/index.ts",
-    "type-check": "bun tsc --noEmit",
-    "lint": "biome lint src",
-    "lint:fix": "biome lint --write src",
-    "format": "biome format src",
-    "format:fix": "biome format --write src",
-    "check": "biome check src && bun tsc --noEmit",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format .",
+    "format:fix": "biome format --write .",
+    "check": "biome check .",
     "prepare": "lefthook install"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0",
-    "yaml": "^2.7.0",
-    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@evilmartians/lefthook": "^1.10.0",
-    "@tsconfig/bun": "^1.0.7",
-    "@types/bun": "^1.1.14",
-    "typescript": "^5.7.2"
+    "@evilmartians/lefthook": "^1.10.0"
   }
 }

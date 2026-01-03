@@ -1,12 +1,9 @@
 pre-commit:
   parallel: true
   commands:
-    type-check:
-      glob: "*.{ts,tsx}"
-      run: bun tsc --noEmit
     lint:
-      glob: "*.{ts,tsx}"
+      glob: "*.{md,json}"
       run: bun run lint:fix
     format:
-      glob: "*.{ts,tsx}"
+      glob: "*.{md,json}"
       run: bun run format:fix
