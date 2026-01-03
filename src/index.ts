@@ -1,7 +1,10 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
+import { listCoreTypes } from "./core/types/patterns";
+import { analyzeReferenceSongInputSchema } from "./schemas/analyze";
 import { generateSunoPackInputSchema, validateSunoPackInputSchema } from "./schemas/output";
+import { analyzeReferenceSong } from "./tools/analyzeReferenceSong";
 import { generateSunoPack } from "./tools/generateSunoPack";
 import { validateSunoPack } from "./tools/validateSunoPack";
 
@@ -91,6 +94,73 @@ server.tool(
 		}
 	},
 );
+
+// Tool: analyze_reference_song_to_analysis_yaml
+server.tool(
+	"analyze_reference_song_to_analysis_yaml",
+	`Analyze a reference song and generate analysis.yaml.
+This tool does NOT access copyrighted content - it generates analysis based on:
+- core_type patterns (abstracted style knowledge)
+- User-provided metadata
+
+Available core_types: ${listCoreTypes().join(", ")}`,
+	{
+		title: z.string().describe("Song title"),
+		artist: z.string().describe("Artist name"),
+		core_type: z.string().describe(`Style type (${listCoreTypes().join(", ")})`),
+		target_length: z
+			.enum(["3min", "4min", "5min"])
+			.optional()
+			.describe("Target song length (default: 3min)"),
+		genre_tags: z
+			.array(z.string())
+			.optional()
+			.describe("Genre tags (e.g., ['Japanese Pop', 'Folk Pop'])"),
+		notes: z
+			.string()
+			.optional()
+			.describe("Additional notes about the song style (e.g., '情景少なめ、盛り上げ過ぎない')"),
+	},
+	async (args) => {
+		try {
+			const input = analyzeReferenceSongInputSchema.parse(args);
+			const result = await analyzeReferenceSong(input);
+
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify(result, null, 2),
+					},
+				],
+			};
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Error: ${message}`,
+					},
+				],
+				isError: true,
+			};
+		}
+	},
+);
+
+// Tool: list_core_types
+server.tool("list_core_types", "List available core_types for song analysis", {}, async () => {
+	const types = listCoreTypes();
+	return {
+		content: [
+			{
+				type: "text",
+				text: JSON.stringify({ available_types: types }, null, 2),
+			},
+		],
+	};
+});
 
 // Start server
 async function main() {

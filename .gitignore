@@ -26,3 +26,7 @@ logs/
 
 # Test coverage
 coverage/
+
+# Claude Code
+.claude/
+.mcp.json
