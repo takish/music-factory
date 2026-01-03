@@ -1,0 +1,179 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/takish/music-factory/schema/analysis.schema.json",
+  "title": "Song Analysis",
+  "description": "Schema for song analysis YAML files",
+  "type": "object",
+  "required": ["source_song", "music_structure", "arrangement", "lyrics_design"],
+  "properties": {
+    "source_song": {
+      "type": "object",
+      "required": ["title"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Original song title"
+        },
+        "artist": {
+          "type": "string",
+          "description": "Original artist name"
+        }
+      }
+    },
+    "core_type": {
+      "type": "string",
+      "description": "Style type reference (e.g., yorushika, illit)",
+      "examples": ["yorushika", "illit", "jpop-ballad"]
+    },
+    "music_structure": {
+      "type": "object",
+      "required": ["tempo_bpm", "key_mode", "sections"],
+      "properties": {
+        "target_length": {
+          "type": "string",
+          "enum": ["3min", "4min", "5min"],
+          "default": "3min"
+        },
+        "tempo_bpm": {
+          "type": "number",
+          "minimum": 40,
+          "maximum": 300
+        },
+        "key_mode": {
+          "type": "string",
+          "enum": ["major", "minor"]
+        },
+        "energy_curve": {
+          "type": "string",
+          "enum": ["flat", "build", "wave"],
+          "default": "flat"
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Intro",
+              "Verse1",
+              "Verse2",
+              "PreChorus",
+              "Chorus",
+              "PostChorus",
+              "Instrumental",
+              "Bridge",
+              "FinalChorus",
+              "FinalChorusRepeat",
+              "Outro"
+            ]
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "chord_progression": {
+      "type": "object",
+      "properties": {
+        "notation": {
+          "type": "string",
+          "enum": ["roman_numerals", "chord_names"],
+          "default": "roman_numerals"
+        },
+        "verse": {
+          "$ref": "#/$defs/chordSection"
+        },
+        "prechorus": {
+          "$ref": "#/$defs/chordSection"
+        },
+        "chorus": {
+          "$ref": "#/$defs/chordSection"
+        },
+        "bridge": {
+          "$ref": "#/$defs/chordSection"
+        }
+      }
+    },
+    "arrangement": {
+      "type": "object",
+      "required": ["genre_tags"],
+      "properties": {
+        "genre_tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "center": {
+          "type": "string",
+          "description": "Main instrument"
+        },
+        "rhythm": {
+          "type": "string"
+        },
+        "bass": {
+          "type": "string"
+        },
+        "density": {
+          "type": "object",
+          "properties": {
+            "verse": { "type": "string" },
+            "chorus": { "type": "string" },
+            "final": { "type": "string" }
+          }
+        },
+        "dynamics": {
+          "type": "string"
+        },
+        "ear_candy": {
+          "type": "string"
+        }
+      }
+    },
+    "lyrics_design": {
+      "type": "object",
+      "required": ["language"],
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": ["ja", "en", "mixed"]
+        },
+        "perspective": {
+          "type": "string"
+        },
+        "scenery": {
+          "type": "string"
+        },
+        "emotion_expression": {
+          "type": "string"
+        },
+        "word_density": {
+          "type": "string"
+        },
+        "theme": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "chorus_hook_rule": {
+          "type": "object",
+          "properties": {
+            "repeat_short_phrase": { "type": "boolean" },
+            "avoid_direct_emotion_words": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "concept_keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Keywords for image prompt generation"
+    }
+  },
+  "$defs": {
+    "chordSection": {
+      "type": "object",
+      "properties": {
+        "feel": { "type": "string" },
+        "pattern": { "type": "string" }
+      }
+    }
+  }
+}
