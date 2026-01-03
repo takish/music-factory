@@ -1,7 +1,7 @@
 import { parse as parseYaml } from "yaml";
 import type { Analysis } from "../schemas/analysis";
 import type { GenerateNoteInput, GenerateNoteOutput } from "../schemas/output";
-import { getConfig, resolveVaultPath } from "../utils/config";
+import { getConfig, resolveDataPath } from "../utils/config";
 import { readText, writeText } from "../utils/fileIO";
 
 /**
@@ -17,7 +17,7 @@ export async function generateNote(input: GenerateNoteInput): Promise<GenerateNo
 	const config = getConfig();
 
 	// Read and parse analysis YAML
-	const analysisFullPath = resolveVaultPath(config, input.analysis_path);
+	const analysisFullPath = resolveDataPath(config, input.analysis_path);
 	const analysisContent = await readText(analysisFullPath);
 	const analysis = parseYaml(analysisContent) as Analysis;
 
@@ -29,7 +29,7 @@ export async function generateNote(input: GenerateNoteInput): Promise<GenerateNo
 
 	// Write note file
 	const notePath = `notes/${slug}.md`;
-	const noteFullPath = resolveVaultPath(config, notePath);
+	const noteFullPath = resolveDataPath(config, notePath);
 	await writeText(noteFullPath, noteContent);
 
 	// Generate preview

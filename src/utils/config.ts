@@ -1,33 +1,30 @@
 import { join } from "node:path";
 
 export interface Config {
-	vaultPath: string;
+	dataPath: string;
 	promptsPath: string;
 }
 
 /**
- * Get configuration from environment variables
+ * Get configuration from environment variables or use defaults
  */
 export function getConfig(): Config {
-	const vaultPath = process.env.VAULT_PATH;
-	if (!vaultPath) {
-		throw new Error("VAULT_PATH environment variable is required");
-	}
-
-	// prompts are in the repo, relative to the source file
-	const promptsPath = join(import.meta.dir, "../../prompts");
+	// Default to repo-relative data directory
+	const repoRoot = join(import.meta.dir, "../..");
+	const dataPath = process.env.DATA_PATH ?? join(repoRoot, "data");
+	const promptsPath = join(repoRoot, "prompts");
 
 	return {
-		vaultPath,
+		dataPath,
 		promptsPath,
 	};
 }
 
 /**
- * Resolve a path relative to the vault
+ * Resolve a path relative to the data directory
  */
-export function resolveVaultPath(config: Config, ...paths: string[]): string {
-	return join(config.vaultPath, ...paths);
+export function resolveDataPath(config: Config, ...paths: string[]): string {
+	return join(config.dataPath, ...paths);
 }
 
 /**

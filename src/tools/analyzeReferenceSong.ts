@@ -6,7 +6,7 @@ import type {
 	AnalyzeReferenceSongOutput,
 	ConfidenceLevel,
 } from "../schemas/analyze";
-import { getConfig, resolveVaultPath } from "../utils/config";
+import { getConfig, resolveDataPath } from "../utils/config";
 import { writeText } from "../utils/fileIO";
 
 /**
@@ -207,7 +207,7 @@ export async function analyzeReferenceSong(
 
 	// Write YAML file
 	const analysisPath = `analysis/${slug}.yaml`;
-	const fullPath = resolveVaultPath(config, analysisPath);
+	const fullPath = resolveDataPath(config, analysisPath);
 	const yamlContent = stringifyYaml(analysis);
 	await writeText(fullPath, yamlContent);
 

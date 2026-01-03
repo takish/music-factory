@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { validateSunoPack as validate } from "../core/validators/sunoValidator";
 import type { ValidateSunoPackInput, ValidateSunoPackOutput } from "../schemas/output";
-import { getConfig, resolveVaultPath } from "../utils/config";
+import { getConfig, resolveDataPath } from "../utils/config";
 import { fileExists, readText } from "../utils/fileIO";
 
 /**
@@ -11,7 +11,7 @@ export async function validateSunoPack(
 	input: ValidateSunoPackInput,
 ): Promise<ValidateSunoPackOutput> {
 	const config = getConfig();
-	const outputDir = resolveVaultPath(config, input.output_dir);
+	const outputDir = resolveDataPath(config, input.output_dir);
 
 	// Read files
 	const stylePath = join(outputDir, "suno_style.txt");

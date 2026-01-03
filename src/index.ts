@@ -25,7 +25,7 @@ server.tool(
 	{
 		analysis_path: z
 			.string()
-			.describe("Path to analysis YAML file relative to vault (e.g., analysis/sample.yaml)"),
+			.describe("Path to analysis YAML file (e.g., analysis/sample.yaml)"),
 		target_length: z
 			.enum(["3min", "4min", "5min"])
 			.optional()
@@ -70,7 +70,7 @@ server.tool(
 	{
 		output_dir: z
 			.string()
-			.describe("Path to output directory relative to vault (e.g., outputs/sample)"),
+			.describe("Path to output directory (e.g., outputs/sample)"),
 	},
 	async (args) => {
 		try {
@@ -161,7 +161,7 @@ server.tool(
 	{
 		analysis_path: z
 			.string()
-			.describe("Path to analysis YAML file relative to vault (e.g., analysis/sample.yaml)"),
+			.describe("Path to analysis YAML file (e.g., analysis/sample.yaml)"),
 	},
 	async (args) => {
 		try {

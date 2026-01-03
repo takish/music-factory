@@ -8,7 +8,7 @@ import {
 } from "../core/generators/styleGenerator";
 import { type Analysis, analysisSchema } from "../schemas/analysis";
 import type { GenerateSunoPackInput, GenerateSunoPackOutput } from "../schemas/output";
-import { extractSlug, getConfig, resolveVaultPath } from "../utils/config";
+import { extractSlug, getConfig, resolveDataPath } from "../utils/config";
 import { readYaml, writeText } from "../utils/fileIO";
 
 /**
@@ -50,7 +50,7 @@ export async function generateSunoPack(
 	const config = getConfig();
 
 	// Read and validate analysis
-	const analysisPath = resolveVaultPath(config, input.analysis_path);
+	const analysisPath = resolveDataPath(config, input.analysis_path);
 	const rawAnalysis = await readYaml<unknown>(analysisPath);
 	const parseResult = analysisSchema.safeParse(rawAnalysis);
 
@@ -60,7 +60,7 @@ export async function generateSunoPack(
 
 	const analysis = parseResult.data;
 	const slug = extractSlug(input.analysis_path);
-	const outputDir = resolveVaultPath(config, "outputs", slug);
+	const outputDir = resolveDataPath(config, "outputs", slug);
 
 	// Generate content
 	const title = generateTitle(analysis);
