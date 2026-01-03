@@ -1,7 +1,13 @@
 import type { Analysis } from "../../schemas/analysis";
+import {
+	translateToEnglish,
+	translateDynamics,
+	translateConceptKeywords,
+} from "../../utils/translations";
 
 /**
  * Generate image prompt for YouTube thumbnail (16:9, no text)
+ * All output is in English for optimal image generation
  */
 export function generateImagePrompt(analysis: Analysis): string {
 	const parts: string[] = [];
@@ -16,14 +22,16 @@ export function generateImagePrompt(analysis: Analysis): string {
 	const genreStyle = getVisualStyleFromGenre(analysis.arrangement.genre_tags);
 	parts.push(genreStyle);
 
-	// Mood from arrangement
+	// Mood from arrangement (translated)
 	if (analysis.arrangement.dynamics) {
-		parts.push(`${analysis.arrangement.dynamics} atmosphere`);
+		const dynamicsEn = translateDynamics(analysis.arrangement.dynamics);
+		parts.push(`${dynamicsEn} atmosphere`);
 	}
 
-	// Concept keywords
+	// Concept keywords (translated to English imagery)
 	if (analysis.concept_keywords && analysis.concept_keywords.length > 0) {
-		parts.push(analysis.concept_keywords.join(", "));
+		const keywordsEn = translateConceptKeywords(analysis.concept_keywords);
+		parts.push(keywordsEn.join(", "));
 	}
 
 	// Theme visualization
@@ -34,9 +42,10 @@ export function generateImagePrompt(analysis: Analysis): string {
 		}
 	}
 
-	// Scenery if available
+	// Scenery if available (translated)
 	if (analysis.lyrics_design.scenery) {
-		parts.push(analysis.lyrics_design.scenery);
+		const sceneryEn = translateToEnglish(analysis.lyrics_design.scenery);
+		parts.push(sceneryEn);
 	}
 
 	// Energy curve visualization
@@ -79,6 +88,7 @@ function getVisualStyleFromGenre(genreTags: string[]): string {
 
 /**
  * Visualize theme keywords
+ * Maps Japanese and English themes to visual descriptions
  */
 function visualizeTheme(themes: string[]): string | null {
 	const visuals: string[] = [];
@@ -100,6 +110,22 @@ function visualizeTheme(themes: string[]): string | null {
 		}
 		if (themeLower.includes("恋") || themeLower.includes("love")) {
 			visuals.push("warm colors", "soft bokeh");
+		}
+		// Additional theme mappings
+		if (themeLower.includes("愛されるため") || themeLower.includes("演技") || themeLower.includes("虚構")) {
+			visuals.push("dramatic lighting", "mirror reflection", "stage spotlight");
+		}
+		if (themeLower.includes("本音") || themeLower.includes("ズレ")) {
+			visuals.push("contrasting shadows", "double exposure effect");
+		}
+		if (themeLower.includes("孤独") || themeLower.includes("solitude")) {
+			visuals.push("lone figure", "vast empty space");
+		}
+		if (themeLower.includes("葛藤") || themeLower.includes("conflict")) {
+			visuals.push("dark contrasting colors", "split composition");
+		}
+		if (themeLower.includes("反逆") || themeLower.includes("rebellion")) {
+			visuals.push("bold dynamic angles", "fiery colors");
 		}
 	}
 

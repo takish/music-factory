@@ -1,0 +1,39 @@
+Genre:
+J-Pop, K-Pop, Hyper Pop, Trap
+
+Style:
+サビで爆発させるが、解決はしない Japanese song.
+Strong contrast between restrained verses and explosive choruses.
+語るが、救わない expression.
+
+Tempo:
+Medium tempo, groovy (110 BPM).
+
+Harmony:
+Minor key.
+Verse: 不安定なマイナーループ、期待と違和感を同時に作る (i – VI – III – VII).
+Chorus: (i – VI – III – VII（Verseと同型）).
+Bridge: 一時的な開放 (VI – VII – i).
+
+Length / Structure:
+Aim for about 3 minutes.
+Intro → Verse 1 → Pre-Chorus → Chorus
+→ Post-Chorus → Verse 2 → Pre-Chorus → Chorus
+→ Drop → Bridge → Final Chorus → Final Chorus (repeat)
+→ Outro
+
+Arrangement:
+ピアノ + シンセ-centered production.
+Instruments: ピアノ + シンセ, 打ち込みドラム, 808ベース, ストリングス（シンセ）.
+打ち込みドラム rhythm.
+808ベース bass.
+Density: verse: medium, chorus: dense, final: dense.
+Ear candy: ボーカルチョップ、シンセスタブ.
+
+Vocals:
+Rapid-fire delivery in verses.
+
+Lyrics:
+Japanese.
+一人称.
+Theme: 愛されるための演技, 本音と虚構のズレ.

@@ -36,9 +36,10 @@ export function resolvePromptsPath(config: Config, ...paths: string[]): string {
 
 /**
  * Extract slug from analysis path
- * e.g., "vault/analysis/yorushika_tadakiminihare.yaml" -> "yorushika_tadakiminihare"
+ * e.g., "analysis/yorushika_tadakiminihare.yaml" -> "yorushika_tadakiminihare"
+ * e.g., "analysis/yoasobi_idol.md" -> "yoasobi_idol"
  */
 export function extractSlug(analysisPath: string): string {
 	const filename = analysisPath.split("/").pop() ?? "";
-	return filename.replace(/\.(yaml|yml)$/, "");
+	return filename.replace(/\.(yaml|yml|md)$/, "");
 }

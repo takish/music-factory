@@ -6,10 +6,7 @@ import {
 	getStyleCharCount,
 	isStyleWithinLimit,
 } from "../core/generators/styleGenerator";
-import {
-	type ParsedAnalysis,
-	parseAnalysisMarkdown,
-} from "../core/parsers/analysisMarkdownParser";
+import { type ParsedAnalysis, parseAnalysisMarkdown } from "../core/parsers/analysisMarkdownParser";
 import { type Analysis, type Section, analysisSchema } from "../schemas/analysis";
 import type { GenerateSunoPackInput, GenerateSunoPackOutput } from "../schemas/output";
 import { extractSlug, getConfig, resolveDataPath } from "../utils/config";
@@ -19,10 +16,19 @@ import { readText, readYaml, writeText } from "../utils/fileIO";
  * Map section name from markdown to Section enum
  */
 function mapSectionName(name: string): Section | null {
+	const lower = name.toLowerCase();
+
+	// Handle "Repeat" variations first (before removing parentheses)
+	if (lower.includes("repeat") && lower.includes("final") && lower.includes("chorus")) {
+		return "FinalChorusRepeat";
+	}
+
+	// Remove spaces, parenthetical notes, and special chars
 	const normalized = name
 		.replace(/\s+/g, "")
-		.replace(/\d+$/, "")
-		.replace(/[/-]/g, "");
+		.replace(/\(.*?\)/g, "")
+		.replace(/[/-]/g, "")
+		.toLowerCase();
 
 	const mapping: Record<string, Section> = {
 		intro: "Intro",
@@ -42,7 +48,14 @@ function mapSectionName(name: string): Section | null {
 		outro: "Outro",
 	};
 
-	return mapping[normalized.toLowerCase()] ?? null;
+	// Direct match first
+	if (mapping[normalized]) {
+		return mapping[normalized];
+	}
+
+	// Remove trailing number for base section matching
+	const baseSection = normalized.replace(/\d+$/, "");
+	return mapping[baseSection] ?? null;
 }
 
 /**
@@ -86,7 +99,16 @@ function convertParsedToAnalysis(parsed: ParsedAnalysis): Analysis {
 
 	// Ensure at least some sections
 	if (sections.length === 0) {
-		sections.push("Intro", "Verse1", "Chorus", "Verse2", "Chorus", "Bridge", "FinalChorus", "Outro");
+		sections.push(
+			"Intro",
+			"Verse1",
+			"Chorus",
+			"Verse2",
+			"Chorus",
+			"Bridge",
+			"FinalChorus",
+			"Outro",
+		);
 	}
 
 	// Build chord progression
@@ -96,7 +118,12 @@ function convertParsedToAnalysis(parsed: ParsedAnalysis): Analysis {
 
 	for (const [key, value] of Object.entries(parsed.chordProgression.sections)) {
 		const sectionKey = key.toLowerCase() as keyof typeof chordProgression;
-		if (sectionKey === "verse" || sectionKey === "prechorus" || sectionKey === "chorus" || sectionKey === "bridge") {
+		if (
+			sectionKey === "verse" ||
+			sectionKey === "prechorus" ||
+			sectionKey === "chorus" ||
+			sectionKey === "bridge"
+		) {
 			chordProgression[sectionKey] = {
 				feel: value.feel,
 				pattern: value.pattern,
@@ -118,9 +145,10 @@ function convertParsedToAnalysis(parsed: ParsedAnalysis): Analysis {
 		},
 		chord_progression: chordProgression,
 		arrangement: {
-			genre_tags: parsed.arrangement.genreTags.length > 0
-				? parsed.arrangement.genreTags.slice(0, 4)
-				: ["Japanese Pop"],
+			genre_tags:
+				parsed.arrangement.genreTags.length > 0
+					? parsed.arrangement.genreTags.slice(0, 4)
+					: ["Japanese Pop"],
 			center: parsed.arrangement.instruments[0]?.instrument,
 			instruments: parsed.arrangement.instruments.map((i) => i.instrument),
 			rhythm: parsed.arrangement.instruments.find((i) => i.part === "リズム")?.instrument,
@@ -153,38 +181,76 @@ function convertParsedToAnalysis(parsed: ParsedAnalysis): Analysis {
 function mapDensityValue(value: string): "sparse" | "medium" | "dense" {
 	const lower = value.toLowerCase();
 	if (lower.includes("低") || lower.includes("low") || lower.includes("sparse")) return "sparse";
-	if (lower.includes("高") || lower.includes("high") || lower.includes("dense") || lower.includes("最高")) return "dense";
+	if (
+		lower.includes("高") ||
+		lower.includes("high") ||
+		lower.includes("dense") ||
+		lower.includes("最高")
+	)
+		return "dense";
 	return "medium";
 }
 
 /**
- * Generate title from analysis
+ * Generate original title from analysis (avoiding copyright)
+ *
+ * IMPORTANT: Never use the original song title directly.
+ * Create a new, evocative title using abstract concepts.
  */
 function generateTitle(analysis: Analysis): string {
-	// Use source song title as base, but create a unique variation
-	const base = analysis.source_song.title;
+	const keywords = analysis.concept_keywords ?? [];
+	const themes = analysis.lyrics_design.theme ?? [];
+	const originalTitle = analysis.source_song.title.toLowerCase();
 
-	// If there are concept keywords, use them for inspiration
-	if (analysis.concept_keywords && analysis.concept_keywords.length > 0) {
-		const keyword = analysis.concept_keywords[0];
-		// Keep it short (2-8 chars recommended)
-		if (keyword && keyword.length <= 8) {
-			return keyword;
+	// Filter out keywords that are part of the original title
+	const safeKeywords = keywords.filter(k =>
+		k && !originalTitle.includes(k.toLowerCase()) && k.length >= 2
+	);
+
+	// Poetic transformations for common concepts
+	const poeticMappings: Record<string, string[]> = {
+		"夜": ["月影", "星屑", "暁前"],
+		"光": ["煌めき", "残光", "曙光"],
+		"駆ける": ["疾走", "彼方へ"],
+		"追いかける": ["追想", "残像"],
+		"届かない": ["遥か", "彼方"],
+		"希望": ["明日へ", "光芒"],
+		"絶望": ["深淵", "虚空"],
+		"愛": ["想い", "絆"],
+		"嘘": ["仮面", "虚像"],
+		"完璧": ["理想", "幻影"],
+	};
+
+	// Try to find a poetic alternative
+	for (const keyword of keywords) {
+		if (poeticMappings[keyword]) {
+			const alternatives = poeticMappings[keyword];
+			const alt = alternatives[Math.floor(Math.random() * alternatives.length)];
+			if (alt && !originalTitle.includes(alt.toLowerCase())) {
+				return alt;
+			}
 		}
 	}
 
-	// Use a short version of the title
-	if (base.length <= 8) {
-		return base;
+	// Use safe keywords with creative suffix
+	if (safeKeywords.length > 0 && safeKeywords[0]) {
+		const keyword = safeKeywords[0];
+		const suffixes = ["の彼方", "の果て", "よ", "の中で", "へと"];
+		const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+		const combined = keyword + suffix;
+		if (combined.length <= 10) {
+			return combined;
+		}
+		return keyword;
 	}
 
-	// Extract first meaningful segment
-	const segments = base.split(/[、。\s]/);
-	if (segments[0] && segments[0].length <= 8) {
-		return segments[0];
-	}
+	// Use energy curve or mood as abstract title
+	const energyCurve = analysis.music_structure.energy_curve;
+	if (energyCurve === "wave") return "波濤";
+	if (energyCurve === "build") return "昇華";
 
-	return base.slice(0, 8);
+	// Last resort
+	return "無題の歌";
 }
 
 /**
@@ -193,7 +259,11 @@ function generateTitle(analysis: Analysis): string {
 async function loadAnalysis(analysisPath: string): Promise<Analysis> {
 	const content = await readText(analysisPath);
 
-	if (analysisPath.endsWith(".md")) {
+	// Check for markdown by looking at extension or content
+	const isMarkdown = analysisPath.toLowerCase().endsWith(".md") ||
+		content.trimStart().startsWith("---");
+
+	if (isMarkdown) {
 		const parsed = parseAnalysisMarkdown(content);
 		return convertParsedToAnalysis(parsed);
 	}
@@ -230,9 +300,9 @@ export async function generateSunoPack(
 	const lyrics = generateLyrics(analysis);
 
 	// Write files
-	const titlePath = join(outputDir, "title.txt");
-	const stylePath = join(outputDir, "suno_style.txt");
-	const lyricsPath = join(outputDir, "suno_lyrics.txt");
+	const titlePath = join(outputDir, "title.md");
+	const stylePath = join(outputDir, "suno_style.md");
+	const lyricsPath = join(outputDir, "suno_lyrics.md");
 
 	await writeText(titlePath, title);
 	await writeText(stylePath, style);
@@ -254,7 +324,7 @@ export async function generateSunoPack(
 	// Generate image prompt if requested
 	if (input.include_image_prompt) {
 		const imagePrompt = generateImagePrompt(analysis);
-		const imagePromptPath = join(outputDir, "image_prompt.txt");
+		const imagePromptPath = join(outputDir, "image_prompt.md");
 		await writeText(imagePromptPath, imagePrompt);
 		result.files.image_prompt = imagePromptPath;
 	}

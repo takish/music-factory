@@ -1,4 +1,10 @@
 import type { Analysis, Section } from "../../schemas/analysis";
+import {
+	translateToEnglish,
+	translateArray,
+	translateChordFeel,
+	translateDynamics,
+} from "../../utils/translations";
 
 /**
  * Suno v5 Style Prompt Generator
@@ -7,6 +13,7 @@ import type { Analysis, Section } from "../../schemas/analysis";
  * - Style of Music field: 200 char limit (Genre + Mood + Instrumentation + Vocal Style + Structure Hints)
  * - Full style prompt: structured sections for detailed control
  * - v5 best practices: top-anchor style, 1-2 word tags, 2-4 instruments
+ * - All output MUST be in English for optimal Suno results
  */
 
 /**
@@ -46,18 +53,22 @@ export function generateStyle(analysis: Analysis): string {
 
 /**
  * Generate Style section with v5 mood support
+ * All output is translated to English
  */
 function generateStyleSection(analysis: Analysis): string {
 	const lines: string[] = [];
 
-	// Main style description
+	// Main style description (always in English for Suno)
 	const lang = analysis.lyrics_design.language === "ja" ? "Japanese" : "English";
 	const dynamics = analysis.arrangement.dynamics ?? "energetic";
-	lines.push(`${capitalize(dynamics)} ${lang} song.`);
+	// Translate dynamics if it contains Japanese
+	const dynamicsEn = translateDynamics(dynamics);
+	lines.push(`${capitalize(dynamicsEn)} ${lang} song.`);
 
 	// Mood (v5 feature)
 	if (analysis.arrangement.mood && analysis.arrangement.mood.length > 0) {
-		lines.push(`${analysis.arrangement.mood.map(capitalize).join(", ")} mood.`);
+		const moodEn = translateArray(analysis.arrangement.mood);
+		lines.push(`${moodEn.map(capitalize).join(", ")} mood.`);
 	}
 
 	// Energy curve description
@@ -69,12 +80,14 @@ function generateStyleSection(analysis: Analysis): string {
 
 	// Emotion expression
 	if (analysis.lyrics_design.emotion_expression) {
-		lines.push(`${capitalize(analysis.lyrics_design.emotion_expression)} expression.`);
+		const emotionEn = translateToEnglish(analysis.lyrics_design.emotion_expression);
+		lines.push(`${capitalize(emotionEn)} expression.`);
 	}
 
 	// Texture (v5 feature)
 	if (analysis.arrangement.texture) {
-		lines.push(`${capitalize(analysis.arrangement.texture)} texture.`);
+		const textureEn = translateToEnglish(analysis.arrangement.texture);
+		lines.push(`${capitalize(textureEn)} texture.`);
 	}
 
 	return `Style:\n${lines.join("\n")}`;
@@ -106,6 +119,7 @@ function getTempoDescription(bpm: number): string {
 
 /**
  * Generate Harmony section
+ * Chord progression feel is translated to English
  */
 function generateHarmonySection(analysis: Analysis): string {
 	const lines: string[] = [];
@@ -117,15 +131,15 @@ function generateHarmonySection(analysis: Analysis): string {
 	if (analysis.chord_progression) {
 		const cp = analysis.chord_progression;
 		if (cp.verse?.pattern) {
-			const feel = cp.verse.feel ? `${cp.verse.feel} ` : "";
+			const feel = cp.verse.feel ? `${translateChordFeel(cp.verse.feel)} ` : "";
 			lines.push(`Verse: ${feel}(${cp.verse.pattern}).`);
 		}
 		if (cp.chorus?.pattern) {
-			const feel = cp.chorus.feel ? `${cp.chorus.feel} ` : "";
+			const feel = cp.chorus.feel ? `${translateChordFeel(cp.chorus.feel)} ` : "";
 			lines.push(`Chorus: ${feel}(${cp.chorus.pattern}).`);
 		}
 		if (cp.bridge?.pattern) {
-			const feel = cp.bridge.feel ? `${cp.bridge.feel} ` : "";
+			const feel = cp.bridge.feel ? `${translateChordFeel(cp.bridge.feel)} ` : "";
 			lines.push(`Bridge: ${feel}(${cp.bridge.pattern}).`);
 		}
 	}
@@ -185,47 +199,60 @@ function formatSectionFlow(sections: Section[]): string {
 
 /**
  * Generate Arrangement section with v5 instrument support
+ * All terms are translated to English
  */
 function generateArrangementSection(analysis: Analysis): string {
 	const lines: string[] = [];
 	const arr = analysis.arrangement;
 
-	// Main instrument
+	// Main instrument (translated)
 	if (arr.center) {
-		lines.push(`${capitalize(arr.center)}-centered production.`);
+		const centerEn = translateToEnglish(arr.center);
+		lines.push(`${capitalize(centerEn)}-centered production.`);
 	}
 
-	// Instruments (v5: 2-4 recommended)
+	// Instruments (v5: 2-4 recommended, translated)
 	if (arr.instruments && arr.instruments.length > 0) {
-		const instruments = arr.instruments.slice(0, 4);
+		const instruments = translateArray(arr.instruments.slice(0, 4));
 		lines.push(`Instruments: ${instruments.join(", ")}.`);
 	}
 
-	// Rhythm
+	// Rhythm (translated)
 	if (arr.rhythm) {
-		lines.push(`${capitalize(arr.rhythm)} rhythm.`);
+		const rhythmEn = translateToEnglish(arr.rhythm);
+		// Avoid duplication like "programmed drums rhythm"
+		const rhythmLine = rhythmEn.toLowerCase().includes("drum") || rhythmEn.toLowerCase().includes("rhythm")
+			? `${capitalize(rhythmEn)}.`
+			: `${capitalize(rhythmEn)} rhythm.`;
+		lines.push(rhythmLine);
 	}
 
-	// Bass
+	// Bass (translated)
 	if (arr.bass) {
-		lines.push(`${capitalize(arr.bass)} bass.`);
+		const bassEn = translateToEnglish(arr.bass);
+		// Avoid duplication like "synth bass bass"
+		const bassLine = bassEn.toLowerCase().includes("bass")
+			? `${capitalize(bassEn)}.`
+			: `${capitalize(bassEn)} bass.`;
+		lines.push(bassLine);
 	}
 
-	// Density - v5 enhanced
+	// Density - v5 enhanced (translated)
 	if (arr.density) {
 		const d = arr.density;
 		const parts: string[] = [];
-		if (d.verse) parts.push(`verse: ${d.verse}`);
-		if (d.chorus) parts.push(`chorus: ${d.chorus}`);
-		if (d.final) parts.push(`final: ${d.final}`);
+		if (d.verse) parts.push(`verse: ${translateToEnglish(d.verse)}`);
+		if (d.chorus) parts.push(`chorus: ${translateToEnglish(d.chorus)}`);
+		if (d.final) parts.push(`final: ${translateToEnglish(d.final)}`);
 		if (parts.length > 0) {
 			lines.push(`Density: ${parts.join(", ")}.`);
 		}
 	}
 
-	// Ear candy
+	// Ear candy (translated)
 	if (arr.ear_candy) {
-		lines.push(`Ear candy: ${arr.ear_candy}.`);
+		const earCandyEn = translateToEnglish(arr.ear_candy);
+		lines.push(`Ear candy: ${earCandyEn}.`);
 	}
 
 	return `Arrangement:\n${lines.join("\n")}`;
@@ -284,6 +311,7 @@ function generateVocalsSection(analysis: Analysis): string {
 
 /**
  * Generate Lyrics section
+ * Themes are translated to English
  */
 function generateLyricsSection(analysis: Analysis): string {
 	const lines: string[] = [];
@@ -293,19 +321,22 @@ function generateLyricsSection(analysis: Analysis): string {
 	const lang = ld.language === "ja" ? "Japanese" : ld.language === "en" ? "English" : "Mixed";
 	lines.push(`${lang}.`);
 
-	// Perspective
+	// Perspective (translated)
 	if (ld.perspective) {
-		lines.push(`${capitalize(ld.perspective)}.`);
+		const perspectiveEn = translateToEnglish(ld.perspective);
+		lines.push(`${capitalize(perspectiveEn)}.`);
 	}
 
-	// Theme
+	// Theme (translated)
 	if (ld.theme && ld.theme.length > 0) {
-		lines.push(`Theme: ${ld.theme.join(", ")}.`);
+		const themesEn = translateArray(ld.theme);
+		lines.push(`Theme: ${themesEn.join(", ")}.`);
 	}
 
-	// Scenery
+	// Scenery (translated)
 	if (ld.scenery) {
-		lines.push(`${capitalize(ld.scenery)} scenery.`);
+		const sceneryEn = translateToEnglish(ld.scenery);
+		lines.push(`${capitalize(sceneryEn)} scenery.`);
 	}
 
 	// Hook rule: avoid direct emotion

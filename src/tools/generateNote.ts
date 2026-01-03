@@ -1,8 +1,5 @@
 import { parse as parseYaml } from "yaml";
-import {
-	type ParsedAnalysis,
-	parseAnalysisMarkdown,
-} from "../core/parsers/analysisMarkdownParser";
+import { type ParsedAnalysis, parseAnalysisMarkdown } from "../core/parsers/analysisMarkdownParser";
 import type { Analysis, Section } from "../schemas/analysis";
 import type { GenerateNoteInput, GenerateNoteOutput } from "../schemas/output";
 import { getConfig, resolveDataPath } from "../utils/config";
@@ -12,10 +9,19 @@ import { readText, writeText } from "../utils/fileIO";
  * Map section name from markdown to Section enum
  */
 function mapSectionName(name: string): Section | null {
+	const lower = name.toLowerCase();
+
+	// Handle "Repeat" variations first (before removing parentheses)
+	if (lower.includes("repeat") && lower.includes("final") && lower.includes("chorus")) {
+		return "FinalChorusRepeat";
+	}
+
+	// Remove spaces, parenthetical notes, and special chars
 	const normalized = name
 		.replace(/\s+/g, "")
-		.replace(/\d+$/, "")
-		.replace(/[/-]/g, "");
+		.replace(/\(.*?\)/g, "")
+		.replace(/[/-]/g, "")
+		.toLowerCase();
 
 	const mapping: Record<string, Section> = {
 		intro: "Intro",
@@ -35,7 +41,14 @@ function mapSectionName(name: string): Section | null {
 		outro: "Outro",
 	};
 
-	return mapping[normalized.toLowerCase()] ?? null;
+	// Direct match first
+	if (mapping[normalized]) {
+		return mapping[normalized];
+	}
+
+	// Remove trailing number for base section matching
+	const baseSection = normalized.replace(/\d+$/, "");
+	return mapping[baseSection] ?? null;
 }
 
 /**
@@ -73,7 +86,13 @@ function estimateTempo(targetLength: string): number {
 function mapDensityValue(value: string): "sparse" | "medium" | "dense" {
 	const lower = value.toLowerCase();
 	if (lower.includes("低") || lower.includes("low") || lower.includes("sparse")) return "sparse";
-	if (lower.includes("高") || lower.includes("high") || lower.includes("dense") || lower.includes("最高")) return "dense";
+	if (
+		lower.includes("高") ||
+		lower.includes("high") ||
+		lower.includes("dense") ||
+		lower.includes("最高")
+	)
+		return "dense";
 	return "medium";
 }
 
@@ -86,7 +105,16 @@ function convertParsedToAnalysis(parsed: ParsedAnalysis): Analysis {
 		.filter((s): s is Section => s !== null);
 
 	if (sections.length === 0) {
-		sections.push("Intro", "Verse1", "Chorus", "Verse2", "Chorus", "Bridge", "FinalChorus", "Outro");
+		sections.push(
+			"Intro",
+			"Verse1",
+			"Chorus",
+			"Verse2",
+			"Chorus",
+			"Bridge",
+			"FinalChorus",
+			"Outro",
+		);
 	}
 
 	const chordProgression: Analysis["chord_progression"] = {
@@ -95,7 +123,12 @@ function convertParsedToAnalysis(parsed: ParsedAnalysis): Analysis {
 
 	for (const [key, value] of Object.entries(parsed.chordProgression.sections)) {
 		const sectionKey = key.toLowerCase() as keyof typeof chordProgression;
-		if (sectionKey === "verse" || sectionKey === "prechorus" || sectionKey === "chorus" || sectionKey === "bridge") {
+		if (
+			sectionKey === "verse" ||
+			sectionKey === "prechorus" ||
+			sectionKey === "chorus" ||
+			sectionKey === "bridge"
+		) {
 			chordProgression[sectionKey] = {
 				feel: value.feel,
 				pattern: value.pattern,
@@ -117,9 +150,10 @@ function convertParsedToAnalysis(parsed: ParsedAnalysis): Analysis {
 		},
 		chord_progression: chordProgression,
 		arrangement: {
-			genre_tags: parsed.arrangement.genreTags.length > 0
-				? parsed.arrangement.genreTags.slice(0, 4)
-				: ["Japanese Pop"],
+			genre_tags:
+				parsed.arrangement.genreTags.length > 0
+					? parsed.arrangement.genreTags.slice(0, 4)
+					: ["Japanese Pop"],
 			center: parsed.arrangement.instruments[0]?.instrument,
 			instruments: parsed.arrangement.instruments.map((i) => i.instrument),
 			rhythm: parsed.arrangement.instruments.find((i) => i.part === "リズム")?.instrument,
@@ -178,9 +212,7 @@ export async function generateNote(input: GenerateNoteInput): Promise<GenerateNo
 	const analysis = await loadAnalysis(analysisFullPath);
 
 	// Extract slug from analysis_path
-	const slug = input.analysis_path
-		.replace(/^analysis\//, "")
-		.replace(/\.(yaml|md)$/, "");
+	const slug = input.analysis_path.replace(/^analysis\//, "").replace(/\.(yaml|md)$/, "");
 
 	// Build note content
 	const noteContent = buildNoteContent(analysis, slug);
@@ -225,7 +257,9 @@ function buildNoteContent(analysis: Analysis, slug: string): string {
 	lines.push(`# 「${analysis.source_song.title}」風の曲を作る`);
 	lines.push("");
 	if (analysis.source_song.artist) {
-		lines.push(`${analysis.source_song.artist}の「${analysis.source_song.title}」を参考に、曲を作成してみました。`);
+		lines.push(
+			`${analysis.source_song.artist}の「${analysis.source_song.title}」を参考に、曲を作成してみました。`,
+		);
 	} else {
 		lines.push(`「${analysis.source_song.title}」を参考に、曲を作成してみました。`);
 	}

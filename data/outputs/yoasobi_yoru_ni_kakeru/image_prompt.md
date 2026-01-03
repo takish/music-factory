@@ -1,0 +1,1 @@
+16:9 aspect ratio, no text, no typography, no letters, soft ambient lighting, aesthetic composition, Lively yet urgent atmosphere, night, running through, chasing, reaching out, unreachable, desperation, hope, despair, radiant light, flowing movement, rhythmic patterns, anime-inspired illustration style, high quality digital art, cinematic composition

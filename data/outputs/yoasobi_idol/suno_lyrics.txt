@@ -1,0 +1,92 @@
+# Lyrics Template (Suno v5)
+# Language: Japanese
+# Perspective: 一人称
+# Themes: 愛されるための演技, 本音と虚構のズレ
+# Word Density: high
+
+[Intro]
+（楽器のみ / ボーカルなし）
+
+[Verse 1]
+[Energy: Low→Medium]
+（状況設定・導入）
+（愛されるための演技、本音と虚構のズレを描写する 6行）
+
+# TODO: ここに日本語歌詞を記入
+# 1行 = 1フレーズ（息継ぎ位置）
+
+[Pre-Chorus]
+(building up)
+（サビへの期待を煽る）
+（4〜6行で緊張感を高める）
+
+[Chorus]
+(powerfully)
+（キャッチーなフック / 繰り返し可能なフレーズ）
+
+# TODO: サビの歌詞
+# 耳に残るフレーズを意識
+
+[Post-Chorus]
+(lingering)
+（余韻 / ハミング / 短いフレーズの繰り返し）
+(humming)
+
+[Verse 2]
+[Energy: Medium]
+（展開・深掘り）
+（愛されるための演技、本音と虚構のズレを描写する 6行）
+
+# TODO: ここに日本語歌詞を記入
+# 1行 = 1フレーズ（息継ぎ位置）
+
+[Pre-Chorus]
+(building up)
+（サビへの期待を煽る）
+（4〜6行で緊張感を高める）
+
+[Chorus]
+(powerfully)
+（キャッチーなフック / 繰り返し可能なフレーズ）
+
+# TODO: サビの歌詞
+# 耳に残るフレーズを意識
+
+[Drop]
+[Energy: Peak]
+(vocal chop)
+（ドロップ / ベース強調）
+(bass drop)
+# EDM的な落差・解放感
+
+[Bridge]
+(perspective shift)
+（語るが、救わない / 視点の変化 / 本音）
+（2〜4行の短いセクション）
+
+# TODO: ブリッジの歌詞
+# 新しい視点や気づきを表現
+
+[Final Chorus]
+[Energy: Peak]
+(explosive chorus)
+（クライマックス / 最も感情的な瞬間）
+（キャッチーなフック / 繰り返し可能なフレーズ）
+
+# TODO: サビの歌詞
+# 耳に残るフレーズを意識
+
+[Final Chorus]
+(ad-libs)
+(harmonies)
+（クライマックス / 最も感情的な瞬間）
+（キャッチーなフック / 繰り返し可能なフレーズ）
+
+# TODO: サビの歌詞
+# 耳に残るフレーズを意識
+
+[Outro]
+(fade out)
+（フェードアウト / 最後の余韻）
+(breath)
+# または最後の一言
