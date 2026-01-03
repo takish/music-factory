@@ -84,8 +84,23 @@ export const validateSunoPackOutputSchema = z.object({
 	}),
 });
 
+// Generate note from analysis input
+export const generateNoteInputSchema = z.object({
+	analysis_path: z.string().min(1, "analysis_path is required"),
+});
+
+// Generate note from analysis output
+export const generateNoteOutputSchema = z.object({
+	note_path: z.string(),
+	slug: z.string(),
+	preview: z.string().describe("First 20 lines of generated note"),
+	next_actions: z.array(z.string()).describe("Suggested next tools to call"),
+});
+
 // Export types
 export type GenerateSunoPackInput = z.infer<typeof generateSunoPackInputSchema>;
 export type GenerateSunoPackOutput = z.infer<typeof generateSunoPackOutputSchema>;
 export type ValidateSunoPackInput = z.infer<typeof validateSunoPackInputSchema>;
 export type ValidateSunoPackOutput = z.infer<typeof validateSunoPackOutputSchema>;
+export type GenerateNoteInput = z.infer<typeof generateNoteInputSchema>;
+export type GenerateNoteOutput = z.infer<typeof generateNoteOutputSchema>;

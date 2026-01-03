@@ -59,7 +59,7 @@ export interface CoreTypePattern {
 export const CORE_TYPE_PATTERNS: Record<string, CoreTypePattern> = {
 	yorushika: {
 		name: "yorushika",
-		description: "ヨルシカ風の文学的なJ-Rock/Alternative Pop",
+		description: "情景優先、抑制、余韻、ギター中心",
 		defaultSections: [
 			"Intro",
 			"Verse1",
@@ -104,7 +104,7 @@ export const CORE_TYPE_PATTERNS: Record<string, CoreTypePattern> = {
 
 	illit: {
 		name: "illit",
-		description: "ILLIT風のキュートでミニマルなK-Pop",
+		description: "反復、ミニマル、耳残り、軽い感情",
 		defaultSections: [
 			"Intro",
 			"Verse1",
@@ -150,7 +150,7 @@ export const CORE_TYPE_PATTERNS: Record<string, CoreTypePattern> = {
 
 	yoasobi: {
 		name: "yoasobi",
-		description: "YOASOBI風のストーリーテリングPop",
+		description: "高密度言語、構造でフック、転換/Drop強め",
 		defaultSections: [
 			"Intro",
 			"Verse1",
@@ -195,7 +195,7 @@ export const CORE_TYPE_PATTERNS: Record<string, CoreTypePattern> = {
 
 	aimyon: {
 		name: "aimyon",
-		description: "あいみょん風の素直なアコースティックPop",
+		description: "素直な言葉、日常、盛り上げ過ぎない、アコギ中心",
 		defaultSections: [
 			"Intro",
 			"Verse1",
@@ -238,7 +238,7 @@ export const CORE_TYPE_PATTERNS: Record<string, CoreTypePattern> = {
 
 	gurenka: {
 		name: "gurenka",
-		description: "紅蓮華風のアニメロック（LiSA系）",
+		description: "意志、宣言、強いサビ、アニロック",
 		defaultSections: [
 			"Intro",
 			"Verse1",
@@ -283,7 +283,7 @@ export const CORE_TYPE_PATTERNS: Record<string, CoreTypePattern> = {
 
 	byoushin: {
 		name: "byoushin",
-		description: "病身（びょうしん）系の鬱ロック・感傷的ボカロ",
+		description: "内省/葛藤、言語密度、陰影、ロック",
 		defaultSections: [
 			"Intro",
 			"Verse1",

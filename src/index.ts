@@ -3,8 +3,13 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { listCoreTypes } from "./core/types/patterns";
 import { analyzeReferenceSongInputSchema } from "./schemas/analyze";
-import { generateSunoPackInputSchema, validateSunoPackInputSchema } from "./schemas/output";
+import {
+	generateNoteInputSchema,
+	generateSunoPackInputSchema,
+	validateSunoPackInputSchema,
+} from "./schemas/output";
 import { analyzeReferenceSong } from "./tools/analyzeReferenceSong";
+import { generateNote } from "./tools/generateNote";
 import { generateSunoPack } from "./tools/generateSunoPack";
 import { validateSunoPack } from "./tools/validateSunoPack";
 
@@ -125,6 +130,43 @@ Available core_types: ${listCoreTypes().join(", ")}`,
 		try {
 			const input = analyzeReferenceSongInputSchema.parse(args);
 			const result = await analyzeReferenceSong(input);
+
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify(result, null, 2),
+					},
+				],
+			};
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Error: ${message}`,
+					},
+				],
+				isError: true,
+			};
+		}
+	},
+);
+
+// Tool: generate_note_from_analysis
+server.tool(
+	"generate_note_from_analysis",
+	"Generate note.com article draft from analysis.yaml",
+	{
+		analysis_path: z
+			.string()
+			.describe("Path to analysis YAML file relative to vault (e.g., analysis/sample.yaml)"),
+	},
+	async (args) => {
+		try {
+			const input = generateNoteInputSchema.parse(args);
+			const result = await generateNote(input);
 
 			return {
 				content: [

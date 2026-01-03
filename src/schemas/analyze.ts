@@ -29,6 +29,9 @@ export const analyzeReferenceSongOutputSchema = z.object({
 		chords_functional: confidenceLevelSchema,
 		lyrics_design: confidenceLevelSchema,
 	}),
+	analysis_preview: z.string().describe("First 30 lines of generated YAML"),
+	warnings: z.array(z.string()).describe("Notes and caveats about the analysis"),
+	next_actions: z.array(z.string()).describe("Suggested next tools to call"),
 });
 
 // Export types

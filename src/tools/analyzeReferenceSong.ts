@@ -10,15 +10,65 @@ import { getConfig, resolveVaultPath } from "../utils/config";
 import { writeText } from "../utils/fileIO";
 
 /**
- * Generate slug from artist and title
+ * Japanese to romaji mapping for common characters
  */
-function generateSlug(artist: string, title: string): string {
-	const combined = `${artist}_${title}`;
-	return combined
-		.toLowerCase()
-		.replace(/[^a-z0-9\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]+/g, "_")
-		.replace(/^_+|_+$/g, "")
-		.slice(0, 50);
+const ROMAJI_MAP: Record<string, string> = {
+	// Common artist/song name words
+	あいみょん: "aimyon",
+	ヨルシカ: "yorushika",
+	マリーゴールド: "marigold",
+	紅蓮華: "gurenka",
+	// Hiragana
+	あ: "a",
+	い: "i",
+	う: "u",
+	え: "e",
+	お: "o",
+	か: "ka",
+	き: "ki",
+	く: "ku",
+	け: "ke",
+	こ: "ko",
+	// Add more as needed
+};
+
+/**
+ * Convert Japanese text to ASCII-safe slug
+ * Falls back to core_type + sanitized title if conversion fails
+ */
+function toAsciiSlug(text: string): string {
+	let result = text.toLowerCase();
+
+	// Apply known romaji mappings
+	for (const [jp, romaji] of Object.entries(ROMAJI_MAP)) {
+		result = result.replace(new RegExp(jp, "g"), romaji);
+	}
+
+	// Remove any remaining non-ASCII characters
+	result = result.replace(/[^a-z0-9]+/g, "_");
+
+	// Clean up underscores
+	result = result.replace(/^_+|_+$/g, "").replace(/_+/g, "_");
+
+	return result;
+}
+
+/**
+ * Generate ASCII-only slug from artist and title
+ * Format: {artist}_{title} or {core_type}_{sanitized_title}
+ */
+function generateSlug(artist: string, title: string, coreType: string): string {
+	const artistSlug = toAsciiSlug(artist);
+	const titleSlug = toAsciiSlug(title);
+
+	// If both converted successfully, use them
+	if (artistSlug.length >= 2 && titleSlug.length >= 2) {
+		return `${artistSlug}_${titleSlug}`.slice(0, 50);
+	}
+
+	// Fallback: use core_type + whatever we got
+	const fallback = `${coreType}_${titleSlug || artistSlug || "song"}`;
+	return fallback.slice(0, 50);
 }
 
 /**
@@ -105,8 +155,8 @@ export async function analyzeReferenceSong(
 	// Get pattern for this core_type
 	const pattern = getCoreTypePattern(input.core_type);
 
-	// Generate slug
-	const slug = generateSlug(input.artist, input.title);
+	// Generate ASCII-only slug
+	const slug = generateSlug(input.artist, input.title, input.core_type);
 
 	// Build analysis object (all values are abstractions, no copyrighted content)
 	const analysis: Analysis = {
@@ -130,7 +180,7 @@ export async function analyzeReferenceSong(
 			bridge: pattern.chordPatterns.bridge,
 		},
 		arrangement: {
-			genre_tags: input.genre_tags ?? [pattern.description.split("風")[0] ?? "Pop"],
+			genre_tags: input.genre_tags ?? ["Japanese Pop"],
 			center: pattern.arrangement.center,
 			rhythm: pattern.arrangement.rhythm,
 			bass: pattern.arrangement.bass,
@@ -161,6 +211,26 @@ export async function analyzeReferenceSong(
 	const yamlContent = stringifyYaml(analysis);
 	await writeText(fullPath, yamlContent);
 
+	// Generate preview (first 30 lines)
+	const analysisPreview = yamlContent.split("\n").slice(0, 30).join("\n");
+
+	// Generate warnings based on confidence and input
+	const warnings: string[] = [
+		"chord_progressionはRoman numerals表記の推定値です。実際の曲とは異なる場合があります。",
+	];
+	if (!input.notes) {
+		warnings.push("notesが未指定のため、デフォルトのパターン設定を使用しています。");
+	}
+	if (!input.genre_tags) {
+		warnings.push("genre_tagsが未指定のため、デフォルトの'Japanese Pop'を使用しています。");
+	}
+
+	// Suggest next actions
+	const nextActions: string[] = [
+		`generate_suno_pack({ analysis_path: "${analysisPath}" })`,
+		`generate_note_from_analysis({ analysis_path: "${analysisPath}" })`,
+	];
+
 	// Determine confidence levels
 	// - structure: high (based on well-known patterns)
 	// - arrangement: medium (abstracted, may vary)
@@ -182,5 +252,8 @@ export async function analyzeReferenceSong(
 			chords_functional: confidence.chords_functional as ConfidenceLevel,
 			lyrics_design: confidence.lyrics_design as ConfidenceLevel,
 		},
+		analysis_preview: analysisPreview,
+		warnings,
+		next_actions: nextActions,
 	};
 }
