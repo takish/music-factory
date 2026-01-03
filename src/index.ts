@@ -1,29 +1,125 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { listCoreTypes } from "./core/types/patterns";
-import { analyzeReferenceSongInputSchema } from "./schemas/analyze";
 import {
 	generateNoteInputSchema,
 	generateSunoPackInputSchema,
 	validateSunoPackInputSchema,
 } from "./schemas/output";
-import { analyzeReferenceSong } from "./tools/analyzeReferenceSong";
 import { generateNote } from "./tools/generateNote";
 import { generateSunoPack } from "./tools/generateSunoPack";
+import { saveSongAnalysis, saveSongAnalysisInputSchema } from "./tools/saveSongAnalysis";
 import { validateSunoPack } from "./tools/validateSunoPack";
+import { getConfig, resolveDataPath } from "./utils/config";
+import { readText } from "./utils/fileIO";
 
 const server = new McpServer({
 	name: "music-factory",
-	version: "0.1.0",
+	version: "0.2.0",
 });
+
+// Tool: save_song_analysis
+server.tool(
+	"save_song_analysis",
+	`Save a song analysis as a markdown file.
+
+Use this tool after analyzing a song. The markdown should follow the analysis guide format:
+- Frontmatter with title and artist
+- 曲の本質 (essence)
+- Music Structure with sections and design intent
+- Harmony / Chord Progression with Roman numerals
+- Arrangement with instrument table and density
+- Lyrics Design
+- 設計のポイント (design points)
+- 概念キーワード (keywords)
+
+Call get_analysis_guide first to see the expected format.`,
+	{
+		slug: z
+			.string()
+			.regex(/^[a-z0-9_-]+$/)
+			.describe("File name without extension (e.g., 'yoasobi_idol')"),
+		markdown: z.string().min(100).describe("Analysis markdown content"),
+	},
+	async (args) => {
+		try {
+			const input = saveSongAnalysisInputSchema.parse(args);
+			const result = await saveSongAnalysis(input);
+
+			return {
+				content: [
+					{
+						type: "text",
+						text: JSON.stringify(result, null, 2),
+					},
+				],
+			};
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Error: ${message}`,
+					},
+				],
+				isError: true,
+			};
+		}
+	},
+);
+
+// Tool: get_analysis_guide
+server.tool(
+	"get_analysis_guide",
+	"Get the song analysis markdown format guide. Call this before analyzing a song to understand the expected format.",
+	{},
+	async () => {
+		try {
+			const config = getConfig();
+			const guidePath = resolveDataPath(config, "../prompts/analysis-guide.md");
+			const guide = await readText(guidePath);
+
+			return {
+				content: [
+					{
+						type: "text",
+						text: guide,
+					},
+				],
+			};
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return {
+				content: [
+					{
+						type: "text",
+						text: `Error reading analysis guide: ${message}`,
+					},
+				],
+				isError: true,
+			};
+		}
+	},
+);
 
 // Tool: generate_suno_pack
 server.tool(
 	"generate_suno_pack",
-	"Generate Suno-compatible output files from a song analysis YAML",
+	`Generate Suno-compatible output files from a song analysis.
+
+Supports both .md (markdown) and .yaml analysis files.
+Reads prompts/suno-vocabulary.md and prompts/suno-structure.md for Suno formatting rules.
+
+Outputs:
+- title.txt: New song title (non-similar to original)
+- suno_style.txt: Style prompt (under 1000 chars)
+- suno_lyrics.txt: Lyrics with [Section] markers
+- image_prompt.txt: YouTube thumbnail prompt (optional)`,
 	{
-		analysis_path: z.string().describe("Path to analysis YAML file (e.g., analysis/sample.yaml)"),
+		analysis_path: z
+			.string()
+			.describe("Path to analysis file (e.g., analysis/yoasobi_idol.md or analysis/sample.yaml)"),
 		target_length: z
 			.enum(["3min", "4min", "5min"])
 			.optional()
@@ -96,66 +192,12 @@ server.tool(
 	},
 );
 
-// Tool: analyze_reference_song_to_analysis_yaml
-server.tool(
-	"analyze_reference_song_to_analysis_yaml",
-	`Analyze a reference song and generate analysis.yaml.
-This tool does NOT access copyrighted content - it generates analysis based on:
-- core_type patterns (abstracted style knowledge)
-- User-provided metadata
-
-Available core_types: ${listCoreTypes().join(", ")}`,
-	{
-		title: z.string().describe("Song title"),
-		artist: z.string().describe("Artist name"),
-		core_type: z.string().describe(`Style type (${listCoreTypes().join(", ")})`),
-		target_length: z
-			.enum(["3min", "4min", "5min"])
-			.optional()
-			.describe("Target song length (default: 3min)"),
-		genre_tags: z
-			.array(z.string())
-			.optional()
-			.describe("Genre tags (e.g., ['Japanese Pop', 'Folk Pop'])"),
-		notes: z
-			.string()
-			.optional()
-			.describe("Additional notes about the song style (e.g., '情景少なめ、盛り上げ過ぎない')"),
-	},
-	async (args) => {
-		try {
-			const input = analyzeReferenceSongInputSchema.parse(args);
-			const result = await analyzeReferenceSong(input);
-
-			return {
-				content: [
-					{
-						type: "text",
-						text: JSON.stringify(result, null, 2),
-					},
-				],
-			};
-		} catch (error) {
-			const message = error instanceof Error ? error.message : String(error);
-			return {
-				content: [
-					{
-						type: "text",
-						text: `Error: ${message}`,
-					},
-				],
-				isError: true,
-			};
-		}
-	},
-);
-
 // Tool: generate_note_from_analysis
 server.tool(
 	"generate_note_from_analysis",
-	"Generate note.com article draft from analysis.yaml",
+	"Generate note.com article draft from analysis (supports .md and .yaml)",
 	{
-		analysis_path: z.string().describe("Path to analysis YAML file (e.g., analysis/sample.yaml)"),
+		analysis_path: z.string().describe("Path to analysis file (e.g., analysis/yoasobi_idol.md)"),
 	},
 	async (args) => {
 		try {
@@ -184,19 +226,6 @@ server.tool(
 		}
 	},
 );
-
-// Tool: list_core_types
-server.tool("list_core_types", "List available core_types for song analysis", {}, async () => {
-	const types = listCoreTypes();
-	return {
-		content: [
-			{
-				type: "text",
-				text: JSON.stringify({ available_types: types }, null, 2),
-			},
-		],
-	};
-});
 
 // Start server
 async function main() {

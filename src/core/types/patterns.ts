@@ -398,3 +398,66 @@ export function getCoreTypePattern(coreType: string): CoreTypePattern {
 export function listCoreTypes(): string[] {
 	return Object.keys(CORE_TYPE_PATTERNS);
 }
+
+/**
+ * Artist name to core_type mapping
+ * Supports various name formats (romaji, Japanese, variations)
+ */
+const ARTIST_TO_CORE_TYPE: Record<string, string> = {
+	// YOASOBI
+	yoasobi: "yoasobi",
+	ヨアソビ: "yoasobi",
+	// Ado
+	ado: "ado",
+	// Yorushika
+	yorushika: "yorushika",
+	ヨルシカ: "yorushika",
+	// ILLIT
+	illit: "illit",
+	アイリット: "illit",
+	// Aimyon
+	aimyon: "aimyon",
+	あいみょん: "aimyon",
+	// LiSA (gurenka style)
+	lisa: "gurenka",
+	"lisa (織部 里沙)": "gurenka",
+	// Zutomayo (byoushin style)
+	ずっと真夜中でいいのに: "byoushin",
+	"ずっと真夜中でいいのに。": "byoushin",
+	zutomayo: "byoushin",
+	ztmy: "byoushin",
+};
+
+/**
+ * Infer core_type from artist name
+ * Returns null if no match found
+ */
+export function inferCoreTypeFromArtist(artist: string): string | null {
+	const normalizedArtist = artist.toLowerCase().trim();
+
+	// Direct match
+	if (ARTIST_TO_CORE_TYPE[normalizedArtist]) {
+		return ARTIST_TO_CORE_TYPE[normalizedArtist];
+	}
+
+	// Check all mappings (case-insensitive)
+	for (const [key, value] of Object.entries(ARTIST_TO_CORE_TYPE)) {
+		if (key.toLowerCase() === normalizedArtist) {
+			return value;
+		}
+	}
+
+	// Partial match for common patterns
+	if (normalizedArtist.includes("yoasobi")) return "yoasobi";
+	if (normalizedArtist.includes("ado")) return "ado";
+	if (normalizedArtist.includes("yorushika") || normalizedArtist.includes("ヨルシカ"))
+		return "yorushika";
+	if (normalizedArtist.includes("illit")) return "illit";
+	if (normalizedArtist.includes("aimyon") || normalizedArtist.includes("あいみょん"))
+		return "aimyon";
+	if (normalizedArtist.includes("lisa")) return "gurenka";
+	if (normalizedArtist.includes("ずっと真夜中") || normalizedArtist.includes("zutomayo"))
+		return "byoushin";
+
+	return null;
+}

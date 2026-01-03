@@ -2,11 +2,12 @@ import { z } from "zod";
 
 /**
  * Input schema for analyze_reference_song_to_analysis_yaml
+ * core_type is optional - will be inferred from artist if not provided
  */
 export const analyzeReferenceSongInputSchema = z.object({
 	title: z.string().min(1, "title is required"),
 	artist: z.string().min(1, "artist is required"),
-	core_type: z.string().min(1, "core_type is required"),
+	core_type: z.string().optional(),
 	target_length: z.enum(["3min", "4min", "5min"]).optional().default("3min"),
 	genre_tags: z.array(z.string()).optional(),
 	notes: z.string().optional(),

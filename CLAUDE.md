@@ -111,6 +111,36 @@ notes/<slug>.md              outputs/<slug>/
 
 **重要思想**: 「3分にして」ではなく **展開設計で長さを作る**
 
+## Sunoナレッジ参照ルール
+
+Suno関連の出力を生成・編集する際は、必ず以下のナレッジファイルを参照すること。
+
+### 参照すべきファイル
+
+| ファイル | 用途 | 参照タイミング |
+|----------|------|----------------|
+| `prompts/suno-vocabulary.md` | 表現・タグ辞書 | スタイル/歌詞生成時 |
+| `prompts/suno-structure.md` | 楽曲構成パターン | 構成設計時 |
+| `prompts/types/<core_type>.md` | 設計タイプ別パターン | 分析/生成時 |
+
+### 具体的な参照ルール
+
+1. **suno_style.txt 生成時**
+   - `suno-vocabulary.md` のジャンル表現、ムード表現、テンポ表現を使用
+   - Sunoが認識できる表現のみ使用すること
+
+2. **suno_lyrics.txt 生成時**
+   - `suno-structure.md` の構成パターンに従う
+   - `suno-vocabulary.md` のボーカルスタイル、ダイナミクス表現を使用
+   - セクションタグは `[Verse 1]`, `[Pre-Chorus]` など標準形式
+
+3. **analysis.yaml 作成時**
+   - `suno-structure.md` の構成パターンを参考に sections を設計
+   - 3分構成なら標準パターン（約70%採用）を基本に
+
+4. **手動編集時**
+   - ナレッジにない表現を使う場合は、ナレッジに追加してから使用
+
 ## core_type の位置づけ
 
 core_type は「アーティスト模倣」ではなく、**設計タイプ（音楽的な型）**を表します。
@@ -225,6 +255,8 @@ music-factory/
 │   ├── tools/                # MCPツール実装
 │   └── utils/                # ユーティリティ
 ├── prompts/
+│   ├── suno-vocabulary.md    # Sunoプロンプト表現辞書
+│   ├── suno-structure.md     # 楽曲構成パターン
 │   └── types/                # core_type説明（Markdown）
 ├── schema/
 │   └── analysis.schema.json  # JSON Schema

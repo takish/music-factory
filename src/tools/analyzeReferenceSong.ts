@@ -1,5 +1,10 @@
 import { stringify as stringifyYaml } from "yaml";
-import { getCoreTypePattern, listCoreTypes } from "../core/types/patterns";
+import {
+	getCoreTypePattern,
+	inferCoreTypeFromArtist,
+	listCoreTypes,
+	type DensityPattern,
+} from "../core/types/patterns";
 import type { Analysis, Section } from "../schemas/analysis";
 import type {
 	AnalyzeReferenceSongInput,
@@ -8,6 +13,58 @@ import type {
 } from "../schemas/analyze";
 import { getConfig, resolveDataPath } from "../utils/config";
 import { writeText } from "../utils/fileIO";
+
+/**
+ * Map pattern density value to analysis schema density enum
+ * Patterns use: "low", "medium", "high", "very high", "medium-high"
+ * Analysis uses: "sparse", "medium", "dense"
+ */
+function mapDensityValue(value: string): "sparse" | "medium" | "dense" {
+	switch (value.toLowerCase()) {
+		case "low":
+			return "sparse";
+		case "medium":
+			return "medium";
+		case "high":
+		case "very high":
+		case "medium-high":
+			return "dense";
+		default:
+			return "medium";
+	}
+}
+
+/**
+ * Map DensityPattern from patterns.ts to analysis schema format
+ */
+function mapDensityPattern(pattern: DensityPattern): {
+	verse?: "sparse" | "medium" | "dense";
+	chorus?: "sparse" | "medium" | "dense";
+	final?: "sparse" | "medium" | "dense";
+} {
+	return {
+		verse: mapDensityValue(pattern.verse),
+		chorus: mapDensityValue(pattern.chorus),
+		final: mapDensityValue(pattern.final),
+	};
+}
+
+/**
+ * Map word density from patterns to analysis schema
+ * Patterns use string, analysis uses: "low" | "medium" | "high"
+ */
+function mapWordDensity(value: string): "low" | "medium" | "high" {
+	switch (value.toLowerCase()) {
+		case "low":
+			return "low";
+		case "medium":
+			return "medium";
+		case "high":
+			return "high";
+		default:
+			return "medium";
+	}
+}
 
 /**
  * Japanese to romaji mapping for common characters
@@ -144,19 +201,37 @@ export async function analyzeReferenceSong(
 ): Promise<AnalyzeReferenceSongOutput> {
 	const config = getConfig();
 
-	// Validate core_type
+	// Resolve core_type: use provided or infer from artist
 	const availableTypes = listCoreTypes();
-	if (!availableTypes.includes(input.core_type)) {
-		throw new Error(
-			`Unknown core_type: ${input.core_type}. Available: ${availableTypes.join(", ")}`,
-		);
+	let coreType: string;
+	let coreTypeInferred = false;
+
+	if (input.core_type) {
+		// Validate provided core_type
+		if (!availableTypes.includes(input.core_type)) {
+			throw new Error(
+				`Unknown core_type: ${input.core_type}. Available: ${availableTypes.join(", ")}`,
+			);
+		}
+		coreType = input.core_type;
+	} else {
+		// Infer from artist name
+		const inferred = inferCoreTypeFromArtist(input.artist);
+		if (!inferred) {
+			throw new Error(
+				`Could not infer core_type from artist "${input.artist}". ` +
+					`Please specify core_type explicitly. Available: ${availableTypes.join(", ")}`,
+			);
+		}
+		coreType = inferred;
+		coreTypeInferred = true;
 	}
 
 	// Get pattern for this core_type
-	const pattern = getCoreTypePattern(input.core_type);
+	const pattern = getCoreTypePattern(coreType);
 
 	// Generate ASCII-only slug
-	const slug = generateSlug(input.artist, input.title, input.core_type);
+	const slug = generateSlug(input.artist, input.title, coreType);
 
 	// Build analysis object (all values are abstractions, no copyrighted content)
 	const analysis: Analysis = {
@@ -164,7 +239,7 @@ export async function analyzeReferenceSong(
 			title: input.title,
 			artist: input.artist,
 		},
-		core_type: input.core_type,
+		core_type: coreType,
 		music_structure: {
 			target_length: input.target_length ?? "3min",
 			tempo_bpm: estimateTempo(input, pattern.tempoRange),
@@ -184,7 +259,7 @@ export async function analyzeReferenceSong(
 			center: pattern.arrangement.center,
 			rhythm: pattern.arrangement.rhythm,
 			bass: pattern.arrangement.bass,
-			density: pattern.arrangement.density,
+			density: mapDensityPattern(pattern.arrangement.density),
 			dynamics: pattern.arrangement.dynamics,
 			ear_candy: pattern.arrangement.earCandy,
 		},
@@ -193,7 +268,7 @@ export async function analyzeReferenceSong(
 			perspective: pattern.lyricsDesign.perspective,
 			scenery: pattern.lyricsDesign.scenery,
 			emotion_expression: pattern.lyricsDesign.emotionExpression,
-			word_density: pattern.lyricsDesign.wordDensity,
+			word_density: mapWordDensity(pattern.lyricsDesign.wordDensity),
 			theme: pattern.typicalThemes.slice(0, 3),
 			chorus_hook_rule: {
 				repeat_short_phrase: pattern.lyricsDesign.chorusHookRule.includes("repeat_short_phrase"),
@@ -218,6 +293,9 @@ export async function analyzeReferenceSong(
 	const warnings: string[] = [
 		"chord_progressionはRoman numerals表記の推定値です。実際の曲とは異なる場合があります。",
 	];
+	if (coreTypeInferred) {
+		warnings.push(`core_typeはアーティスト名"${input.artist}"から"${coreType}"と推定されました。`);
+	}
 	if (!input.notes) {
 		warnings.push("notesが未指定のため、デフォルトのパターン設定を使用しています。");
 	}
